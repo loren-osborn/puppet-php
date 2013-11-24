@@ -56,10 +56,22 @@ class php::params {
     /(?i:Ubuntu|Debian|Mint|SLES|OpenSuSE)/ => '/etc/php5',
     default                                   => '/etc/php.d',
   }
-
-  $config_file = $::operatingsystem ? {
-    /(?i:Ubuntu|Debian|Mint|SLES|OpenSuSE)/ => '/etc/php5/apache2/php.ini',
-    default                                 => '/etc/php.ini',
+  
+  if $::php_fact_web_ini_file_path =~ /\/conf\.d\/php\.ini$/ {
+    $web_config_dir = regsubst($::php_fact_web_ini_file_path, '/conf\.d/php\.ini$', '')
+  } elsif $::operatingsystem =~ /(?i:Ubuntu)/ {
+	$web_config_dir = '/etc/php5/apache2'
+  } else {
+	$web_config_dir = $config_dir
+  }
+  
+  if $::php_fact_web_ini_file_path != '' {
+    $config_file = $::php_fact_web_ini_file_path
+  } else {
+	  $config_file = $::operatingsystem ? {
+		/(?i:Ubuntu|Debian|Mint|SLES|OpenSuSE)/ => '/etc/php5/apache2/php.ini',
+		default                                 => '/etc/php.ini',
+	  }
   }
 
   $config_file_mode = $::operatingsystem ? {
